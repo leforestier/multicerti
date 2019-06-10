@@ -3,7 +3,7 @@ import os.path
 
 with open('README.rst') as fd:
     long_description = fd.read()
-    
+
 # There was a problem with certbot's own requirements (requirement conflicts)
 # Trying to get rid of the problem by requiring some packages directly:
 
@@ -11,15 +11,23 @@ certbot_requirements = ["requests[security]>=2.10", "six>=1.9"]
 
 setup(
     name='multicerti',
-    version='0.0.1',
+    version='0.1.0',
     python_requires='>=3.3',
-    install_requires = certbot_requirements + ['certbot>=0.14.2', 'naval>=0.8.0', 'docopt>=0.6.2', 'pyparsing>=1.5.5'],
+    install_requires = certbot_requirements + [
+        'certbot>=0.14.2', 'naval>=0.8.0', 'docopt>=0.6.2', 'pyparsing>=1.5.5'
+    ],
     packages=['multicerti'],
     scripts=['bin/multicerti'],
     author = 'Benjamin Le Forestier',
     author_email = 'benjamin@leforestier.org',
-    keywords = ["letsencrypt", "certbot", "reverse proxy", "ssl", "tls", "certificate", "https"],
-    description = "Obtain and renew ssl certificates for multiple domains and configure a reverse proxy for these, all in one step.",
+    keywords = [
+        "letsencrypt", "let's encrypt", "certbot", "reverse proxy", "ssl",
+        "tls", "certificate", "http", "https", "proxy"
+    ],
+    description = (
+        "Quickly obtain or renew Letsencrypt ssl certificates for multiple domains. "
+        "Automatically configure Nginx as a https frontend and http reverse proxy for these."
+    ),
     long_description = long_description,
     classifiers = [
         "Intended Audience :: System Administrators",

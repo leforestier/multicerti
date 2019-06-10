@@ -4,4 +4,4 @@ or read README.rst
 """
 
 __author__ = "Benjamin Le Forestier (benjamin@leforestier.org)"
-__version__ = '0.0.1'
+__version__ = '0.1.0'
