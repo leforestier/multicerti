@@ -5,6 +5,7 @@
     :language: sh
 
 Manage multiple domains served over http and/or https using *Let's encrypt* ssl certificates.
+
 Multicerti configures nginx to act as a reverse http and https proxy server and deals automatically with the creation and renewal of ssl certificates using *certbot*.
 The nginx configuration is generated using the *nginxparser* module from Fatih Erikli.
 
