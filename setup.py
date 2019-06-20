@@ -11,7 +11,7 @@ certbot_requirements = ["requests[security]>=2.10", "six>=1.9"]
 
 setup(
     name='multicerti',
-    version='0.1.0',
+    version='0.2.0',
     python_requires='>=3.3',
     install_requires = certbot_requirements + [
         'certbot>=0.14.2', 'naval>=0.8.0', 'docopt>=0.6.2', 'pyparsing>=1.5.5'
