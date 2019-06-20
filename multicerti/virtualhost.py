@@ -7,7 +7,7 @@ class VirtualHost(object):
 
     __last_id = 0
     __id_lock = Lock()
-    
+
     ssl_ciphers = (
         'ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:'
         'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:'
@@ -17,9 +17,9 @@ class VirtualHost(object):
         'DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:'
         'ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:'
         'AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS'
-    )   
+    )
     ssl_protocols = 'TLSv1 TLSv1.1 TLSv1.2'
-    
+
     @classmethod
     def generate_id(cls):
         with cls.__id_lock:
@@ -27,7 +27,7 @@ class VirtualHost(object):
             return cls.__last_id
 
     def __init__(self, domains, protocols = ('http',),
-     http_to_https = False, backends = (), redirect = None, root = None, 
+     http_to_https = False, backends = (), redirect = None, root = None,
      registration_email = None
     ):
         assert bool(domains) and sum(map(bool, (root, backends, redirect))) == 1
@@ -40,25 +40,25 @@ class VirtualHost(object):
         self.root = root
         self.registration_email = registration_email
         self.id = self.__class__.generate_id()
-        
+
     def master_domain(self):
         for domain in self.domains:
             if os.path.exists(os.path.join('/etc/letsencrypt/live', domain, 'fullchain.pem')):
                 return domain
         return self.domains[0]
-    
+
     def fullchain_pem(self):
         return os.path.join('/etc/letsencrypt/live', self.master_domain(), 'fullchain.pem')
-        
+
     def privkey_pem(self):
         return os.path.join('/etc/letsencrypt/live', self.master_domain(), 'privkey.pem')
-        
+
     def letsencrypt_webroot(self):
         return os.path.join('/usr/local/www/letsencrypt', self.master_domain())
-        
+
     def letsencrypt_exists(self):
         return os.path.exists(self.fullchain_pem())
-        
+
     def upstream_block(self):
         if self.backends:
             return 'upstream frontends%s { %s }' % (
@@ -69,8 +69,8 @@ class VirtualHost(object):
             )
         else:
             return ''
-            
-            
+
+
     def _location_content(self):
         if self.backends:
             return [
@@ -86,15 +86,16 @@ class VirtualHost(object):
         else:
             assert self.root
             return [['root', self.root]]
-            
-        
-            
+
+
+
     def https_server_block(self):
-        
+
         if 'https' in self.protocols and self.letsencrypt_exists():
             return nginxparser.dumps([[
                 ['server'], [
                     ['listen', '443 ssl'],
+                    ['listen', '[::]:443 ssl'],
                     ['server_name', ' '.join(self.domains)],
                     ['ssl_certificate', self.fullchain_pem()],
                     ['ssl_certificate_key', self.privkey_pem()],
@@ -108,12 +109,17 @@ class VirtualHost(object):
             ]])
         else:
             return ''
-            
+
     def http_server_block(self):
-        http_block = [['listen', '80'], ['server_name', ' '.join(self.domains)]]
+        http_block = [
+            ['listen', '80'],
+            ['listen', '[::]:80'],
+            ['server_name', ' '.join(self.domains)]
+
+        ]
         if 'https' in self.protocols:
             http_block.append([
-                ['location', '/.well-known/'], [ 
+                ['location', '/.well-known/'], [
                     ['alias',  os.path.join(self.letsencrypt_webroot(), '.well-known/')],
                     ['autoindex', 'off']
                 ]
@@ -135,6 +141,3 @@ class VirtualHost(object):
             ])
 
         return nginxparser.dumps([[['server'], http_block]])
-        
-
-

@@ -25,29 +25,29 @@ class Conf(OrderedDict):
         else:
             conf = cls(vhosts = [])
             os.makedirs(cls.DEFAULT_CONF_DIR, exist_ok = True)
-            
+
         if conf.add_good_defaults():
             conf.save(cls.DEFAULT_CONF_PATH)
-            
+
         return conf
-        
+
     @classmethod
     def load(cls, path):
         with open(path) as fp:
             conf_str = fp.read()
         dct = json.loads(conf_str, object_pairs_hook = OrderedDict)
         return cls(dct)
-        
+
     def validate(self):
         return configuration_schema.validate(self)
-        
+
     def save(self, path):
         temp_path = to_tempfile(json.dumps(self, indent = 4), prefix = path + '.')
         shutil.move(temp_path, path)
-        
+
     def add_good_defaults(self):
         changes = 0
-    
+
         try:
             system_nginx_conf = next(filter(
                 os.path.exists,
@@ -58,15 +58,15 @@ class Conf(OrderedDict):
             ))
         except StopIteration:
             pass
-        else:            
+        else:
             if 'nginx_conf_location' not in self:
                 self['nginx_conf_location'] = system_nginx_conf
                 changes += 1
-                
+
             if 'nginx_conf_template' not in self:
                 self['nginx_conf_template'] = self.__class__.DEFAULT_TEMPLATE_PATH
                 changes += 1
-                
+
             if (
                 self['nginx_conf_template'] == self.__class__.DEFAULT_TEMPLATE_PATH
                 and
@@ -83,11 +83,11 @@ class Conf(OrderedDict):
                         prefix = self.__class__.DEFAULT_TEMPLATE_PATH + '.'
                     )
                     shutil.move(temp_path, self.__class__.DEFAULT_TEMPLATE_PATH)
-            
+
         if 'nginx' not in self:
             self['nginx'] = 'nginx'
             changes += 1
-            
+
         sysname = os.uname().sysname
         for command in ('status', 'start', 'reload'):
             key = 'nginx_%s' % command
@@ -97,13 +97,13 @@ class Conf(OrderedDict):
                 else:
                     self[key] = ('service', 'nginx', command)
                 changes += 1
-                
+
         return changes
-    
-    
+
+
     @classmethod
     def _make_template_out_of_nginx_conf(cls, nginx_conf_str):
-    
+
         def filter_subitem(subitem):
             if subitem[0] in ('server_tokens', 'proxy_next_upstream'):
                 return ''
@@ -112,9 +112,9 @@ class Conf(OrderedDict):
                     return ''
             if isinstance(subitem[0], list):
                 if subitem[0][0] in ('server', 'upstream'):
-                    return ''    
+                    return ''
             return nginxparser.dumps([subitem])
-            
+
         conf = nginxparser.loads(nginx_conf_str)
         for item in conf:
             if item[0] == ['http']:
@@ -131,6 +131,7 @@ class Conf(OrderedDict):
                     '    \n'
                     '    server {\n'
                     '        listen 80 default_server;\n'
+                    '        listen [::]:80 default_server;\n'
                     '        server_name  _;\n'
                     '        location / {\n'
                     '            return 404;\n'
@@ -140,12 +141,12 @@ class Conf(OrderedDict):
                     '    %(servers)s\n'
                     '    \n'
                     '}' )
-                    
+
             else:
                 yield nginxparser.dumps([item])
             yield '\n'
-            
-            
+
+
 def expand_domain(domain):
     if domain.startswith('.'):
         return (domain[1:], 'www' + domain)
@@ -157,7 +158,7 @@ def vhost_schema(default_email = None):
         [
             Assert(
                 (lambda d: sum(int(key in  d) for key in ('backends', 'redirect', 'root')) == 1),
-                error_message = "You must specify either a list of backends, a redirection url or a root directory." 
+                error_message = "You must specify either a list of backends, a redirection url or a root directory."
             )
         ],
         ['domains',
@@ -230,19 +231,15 @@ configuration_schema = Schema(
         Type(tuple, list),
         Each(str)
     ],
-    ['nginx_start', 
+    ['nginx_start',
         Default(('service', 'nginx', 'start')),
         Type(tuple, list),
         Each(str)
     ],
-    ['nginx_reload', 
+    ['nginx_reload',
         Default(('service', 'nginx', 'reload')),
         Type(tuple, list),
         Each(str)
     ],
     ['nginx', Default('nginx'), Type(str)]
 )
-
-
-
-                 
