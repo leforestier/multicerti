@@ -46,7 +46,7 @@ You'll also need to get the python3-dev, libssl-dev and libffi-dev packages so t
 
 .. code:: sh
 
-    apt-get install python3-pip python3-dev libssl-dev and libffi-dev
+    apt-get install python3-pip python3-dev libssl-dev libffi-dev
 
 
 2. Install multicerti
