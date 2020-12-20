@@ -35,14 +35,19 @@ Python 3
 --------
 
 Python 3.3 or later is required. If you haven't already, install it using your favorite package manager.
-Make sure to also have pip3 installed. Usually, you can install pip3 by running:
+Make sure to also have pip3 installed. Usually you can install it using your package manager. For example, on Debian or Ubuntu, install pip3 by:
+
+.. code:: sh
+
+    apt install python3-pip
+    
+On systems where pip3 is not available in the package manager,  you can still install pip3 by issuing:
 
 .. code:: sh
 
     python3 -m ensurepip
 
-On Debian or Ubuntu, you'll probably need to install pip3 from the package manager.
-You'll also need to get the python3-dev, libssl-dev and libffi-dev packages so that the python modules required by multicerti correctly install.
+On older versions of Ubuntu or Debian, you might also need to get the python3-dev, libssl-dev and libffi-dev packages so that the python modules required by multicerti correctly install.
 
 .. code:: sh
 
